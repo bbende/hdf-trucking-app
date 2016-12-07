@@ -2,6 +2,8 @@
 
 Example application demonstrating how to integrate all of the components of Hortonworks DataFlow.
 
+![Image](https://github.com/bbende/hdf-trucking-app/blob/vagrant/images/hdf-trucking-app.png?raw=true)
+
 This is repository is a work in progress.
 
 ## Pre-Requisites
