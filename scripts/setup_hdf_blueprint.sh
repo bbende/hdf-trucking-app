@@ -89,8 +89,8 @@ else
   tee configuration-custom.json > /dev/null << EOF
 {
   "configurations" : {
-    "nifi-ambari-config": {
-        "nifi.web.http.host": "",
+    "nifi-properties": {
+        "nifi.web.http.host": " ",
         "nifi.remote.input.socket.port" : "8731"
     }
   }

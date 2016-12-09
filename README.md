@@ -1,48 +1,126 @@
-# hdf-trucking-app
+# Hortonworks DataFlow (HDF) Trucking Application
 
-Example application demonstrating how to integrate all of the components of Hortonworks DataFlow.
+Example application demonstrating how to integrate all of the components of Hortonworks DataFlow:
 
-This is repository is a work in progress.
+* Apache NiFi/MiNiFi
+* Apache Kafka
+* Apache Storm
 
-## Pre-Requisites
-
-A working installation of HDF, including all services.
+![Image](https://github.com/bbende/hdf-trucking-app/blob/vagrant/images/hdf-trucking-app.png?raw=true)
 
 ## Setup
 
-### Solr/Banana
+1. Install VirtualBox
 
-  - Add Banana (https://github.com/lucidworks/banana) into the Ambari Infra Solr (/usr/lib/ambari-infra-solr/)
-  - Create a new collection in Solr called 'truck_average_speed' (see scripts/create_collection.sh)
-  - Create required fields in the new Solr collection (see scripts/create_fields.sh)
+    [https://www.virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads)
 
-### Storm
+2. Install Vagrant
 
-  - Build hdf-trucking-storm using 'mvn clean package'
-  - Deploy the Storm topology:
-    
-        storm jar /shared/storm/iot-trucking-storm-1.0-SNAPSHOT.jar com.hortonworks.trucking.storm.SpeedTopology speed-topology
+    [https://www.vagrantup.com/](https://www.vagrantup.com/)
 
-### NiFi
+3. Clone this repository
 
-  - Deploy the flow that is in conf/nifi/flow.xml.gz to NiFi under /var/lib/nifi/conf
+        git clone https://github.com/bbende/hdf-trucking-app.git
 
-### Trucking Simulator
-  
-  - Clone and build https://github.com/georgevetticaden/hdp/tree/master/reference-apps/iot-trucking-app/trucking-data-simulator
-  - Generate data to a file: 
-        
-        nohup java -cp stream-simulator-jar-with-dependencies.jar hortonworks.hdp.refapp.trucking.simulator.SimulationRunnerSingleDriverApp -1 hortonworks.hdp.refapp.trucking.simulator.impl.domain.transport.Truck hortonworks.hdp.refapp.trucking.simulator.impl.collectors.FileEventCollector 1 /shared/stream-simulator/routes/midwest/ 500 /tmp/truck-sensor-data/truck-1.txt 10 'Saint Louis To Tulsa' > nohup-truck-1.out &
+4. Start the Vagrant VM
+
+        cd hdf-trucking-app
+        vagrant up
+
+    NOTE: This step could take a little while, at the end there should be a line that shows something like:
+
+        Cluster build status at: http://localhost:8080/api/v1/clusters/HDF/requests/1
+
+5. Wait until all HDF services have been installed and started
+
+   Go to [http://localhost:8080](http://localhost:8080) in your browser and login with admin/admin.
+
+   Wait until you see all services running:
+
+   ![Image](https://github.com/bbende/hdf-trucking-app/blob/vagrant/images/hdf-ambari-services.png?raw=true)
+
+6. Setup the demo application
+
+        vagrant ssh
+        sudo su -
+        /home/vagrant/sync/scripts/setup_hdf_trucking_app.sh
+
+7. Install Banana Dashboard
+
+        Go to [http://localhost:8886/solr/banana/src/index.html](http://localhost:8886/solr/banana/src/index.html)
+        Click Load icon in top-right
+        Choose Local File
+        Select hdp-trucking-app/conf/banana/HDF_Truck_Events-1478197521141
+        Save & Set As Browser Default
+
+NOTE: To gracefully shutdown the VM, make sure to exit out of your SSH session and execute:
+
+        vagrant halt
+
+      To completely destroy the VM and start over, execute:
+
+        vagrant destroy 
+
+## Overview
+
+This section contains an overview of the demo trucking application.
+
+### Trucking Data Simulator
+
+The trucking data simulator is responsible for writing truck events to a file. Events look like the following:
+
+        2016-12-09 16:07:24.211|truck_geo_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|Normal|36.18|-95.76|1|
+        2016-12-09 16:07:24.212|truck_speed_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|66|
+
+The source code for the simulator is on the VM at:
+
+        /root/hdp-bbende/reference-apps/iot-trucking-app/trucking-data-simulator/
+
+The running simulator is installed on the VM at:
+
+        /opt/hdf-trucking-app/simulator/
+
+The simulator is writing events to a file on the VM at:
+
+        /tmp/truck-sensor-data/truck-1.txt
 
 ### MiNiFi
 
-  - Download the latest version of MiNiFi - https://nifi.apache.org/minifi/download.html
-  - Extract it and copy in conf/minifi/config.yml from this repository to the MiNiFi conf 
-  - Start MiNiFi
+The MiNiFi Java distribution is installed on the VM at:
 
+        /opt/hdf-trucking-app/minifi-0.1.0/
 
+MiNiFi is tailing the file of truck events described above and sending the events to NiFi via site-to-site.
 
+### NiFi
 
+The NiFi console is available at [http://localhost:9090/nifi](http://localhost:9090/nifi).
 
+NiFi is receiving the truck events from MiNiFi and publishing them to a Kafka topic.
 
+NiFi is also consuming from a separate Kafka topic where results are being written by a Storm topology.
 
+### Kafka
+
+There are two Kafka topics:
+
+* truck_speed_events_test - Where speed events are published by NiFi
+* truck_average_speed - Where average speed events are published by Storm
+
+### Storm
+
+The Storm console is available at [http://localhost:8744/index.html](http://localhost:8744/index.html).
+
+The source code for the average speed topology is at:
+
+        /home/vagrant/sync/src/hdf-trucking-storm/
+
+### Solr/Banana
+
+The Solr Admin UI is available at [http://localhost:8886/solr/](http://localhost:8886/solr/).
+
+There is a single collection created called 'truck_average_speed' to hold the average speed events computer by Storm.
+
+NiFi is responsible for consuming those events from Kafka and ingesting them to Solr.
+
+The Banana dashboard is available at [http://localhost:8886/solr/banana/src/index.html](http://localhost:8886/solr/banana/src/index.html).
