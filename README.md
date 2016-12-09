@@ -67,6 +67,8 @@ This section contains an overview of the demo trucking application.
 
 ### Trucking Data Simulator
 
+The simulator is originally forked from this github repo: [https://github.com/georgevetticaden/hdp](https://github.com/georgevetticaden/hdp).
+
 The trucking data simulator is responsible for writing truck events to a file. Events look like the following:
 
     2016-12-09 16:07:24.211|truck_geo_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|Normal|36.18|-95.76|1|
