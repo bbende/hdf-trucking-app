@@ -2,6 +2,7 @@
 
 Example application demonstrating how to integrate all of the components of Hortonworks DataFlow:
 
+<<<<<<< HEAD
 * Apache NiFi/MiNiFi
 * Apache Kafka
 * Apache Storm
@@ -59,7 +60,7 @@ NOTE: To gracefully shutdown the VM, make sure to exit out of your SSH session a
 
       To completely destroy the VM and start over, execute:
 
-        vagrant destroy 
+        vagrant destroy
 
 ## Overview
 
