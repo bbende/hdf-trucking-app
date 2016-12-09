@@ -2,7 +2,6 @@
 
 Example application demonstrating how to integrate all of the components of Hortonworks DataFlow:
 
-<<<<<<< HEAD
 * Apache NiFi/MiNiFi
 * Apache Kafka
 * Apache Storm
@@ -48,19 +47,19 @@ Example application demonstrating how to integrate all of the components of Hort
 
 7. Install Banana Dashboard
 
-        Go to [http://localhost:8886/solr/banana/src/index.html](http://localhost:8886/solr/banana/src/index.html)
-        Click Load icon in top-right
-        Choose Local File
-        Select hdp-trucking-app/conf/banana/HDF_Truck_Events-1478197521141
-        Save & Set As Browser Default
+    * Go to [http://localhost:8886/solr/banana/src/index.html](http://localhost:8886/solr/banana/src/index.html)
+    * Click Load icon in top-right
+    * Choose Local File
+    * Select hdp-trucking-app/conf/banana/HDF_Truck_Events-1478197521141
+    * Save & Set As Browser Default
 
 NOTE: To gracefully shutdown the VM, make sure to exit out of your SSH session and execute:
 
-        vagrant halt
+    vagrant halt
 
-      To completely destroy the VM and start over, execute:
+To completely destroy the VM and start over, execute:
 
-        vagrant destroy
+    vagrant destroy
 
 ## Overview
 
@@ -70,26 +69,26 @@ This section contains an overview of the demo trucking application.
 
 The trucking data simulator is responsible for writing truck events to a file. Events look like the following:
 
-        2016-12-09 16:07:24.211|truck_geo_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|Normal|36.18|-95.76|1|
-        2016-12-09 16:07:24.212|truck_speed_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|66|
+    2016-12-09 16:07:24.211|truck_geo_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|Normal|36.18|-95.76|1|
+    2016-12-09 16:07:24.212|truck_speed_event|47|10|George Vetticaden|1390372503|Saint Louis to Tulsa|66|
 
 The source code for the simulator is on the VM at:
 
-        /root/hdp-bbende/reference-apps/iot-trucking-app/trucking-data-simulator/
+    /root/hdp-bbende/reference-apps/iot-trucking-app/trucking-data-simulator/
 
 The running simulator is installed on the VM at:
 
-        /opt/hdf-trucking-app/simulator/
+    /opt/hdf-trucking-app/simulator/
 
 The simulator is writing events to a file on the VM at:
 
-        /tmp/truck-sensor-data/truck-1.txt
+    /tmp/truck-sensor-data/truck-1.txt
 
 ### MiNiFi
 
 The MiNiFi Java distribution is installed on the VM at:
 
-        /opt/hdf-trucking-app/minifi-0.1.0/
+    /opt/hdf-trucking-app/minifi-0.1.0/
 
 MiNiFi is tailing the file of truck events described above and sending the events to NiFi via site-to-site.
 
@@ -114,7 +113,7 @@ The Storm console is available at [http://localhost:8744/index.html](http://loca
 
 The source code for the average speed topology is at:
 
-        /home/vagrant/sync/src/hdf-trucking-storm/
+    /home/vagrant/sync/src/hdf-trucking-storm/
 
 ### Solr/Banana
 
