@@ -40,9 +40,9 @@ source ~/.bashrc
 source ~/.bashrc
 
 echo "Building & Deploying Storm Average Speed Topology..."
-cd /home/vagrant/sync/src/
+cd $SRC_HOME/src
 mvn clean install
-storm jar /home/vagrant/sync/src/hdf-trucking-storm/target/hdf-trucking-storm-1.0-SNAPSHOT.jar com.hortonworks.trucking.storm.SpeedTopology speed-topology
+storm jar $SRC_HOME/src/hdf-trucking-storm/target/hdf-trucking-storm-1.0-SNAPSHOT.jar com.hortonworks.trucking.storm.SpeedTopology speed-topology
 
 echo "Building Trucking Data Simulator..."
 cd ~
