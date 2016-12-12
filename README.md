@@ -108,7 +108,7 @@ NiFi is also consuming from a separate Kafka topic where results are being writt
 
 There are two Kafka topics:
 
-* truck_speed_events_test - Where speed events are published by NiFi
+* truck_speed_events - Where speed events are published by NiFi
 * truck_average_speed - Where average speed events are published by Storm
 
 ### Storm

@@ -55,7 +55,7 @@ public class SpeedTopology implements Serializable {
     static final long serialVersionUID = 42L;
 
     private static final String STREAM = "truck_speed_stream";
-    private static final String TOPIC = "truck_speed_events_test";
+    private static final String TOPIC = "truck_speed_events";
     private static final String RESULT_TOPIC = "truck_average_speed";
 
     private static final int WINDOW_SIZE_MS = 10000;

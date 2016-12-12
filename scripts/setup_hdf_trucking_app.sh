@@ -18,7 +18,7 @@ echo "Adding fields to new collection in Ambari Infra Solr..."
 $CURR_DIR/solr/create_fields.sh
 
 echo "Creating Kafka Topics..."
-/usr/hdf/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper localhost.localdomain:2181 --replication-factor 1 --partitions 1 --topic truck_speed_events_test
+/usr/hdf/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper localhost.localdomain:2181 --replication-factor 1 --partitions 1 --topic truck_speed_events
 /usr/hdf/current/kafka-broker/bin/kafka-topics.sh --create --zookeeper localhost.localdomain:2181 --replication-factor 1 --partitions 1 --topic truck_average_speed
 
 echo "Deploying NiFi Flow & Restarting NiFi..."
