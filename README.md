@@ -24,6 +24,8 @@ Example application demonstrating how to integrate all of the components of Hort
 
 4. Start the Vagrant VM
 
+    NOTE: This project uses the "centos/6" Vagrant box, if you have used this before you may need to run "vagrant box update" before running "vagrant up" to ensure you are running the latest version of the box. Older versions put the sync folder at /home/vagrant/sync and newer versions put it at /vagrant.
+
         cd hdf-trucking-app
         vagrant up
 
@@ -43,7 +45,7 @@ Example application demonstrating how to integrate all of the components of Hort
 
         vagrant ssh
         sudo su -
-        /home/vagrant/sync/scripts/setup_hdf_trucking_app.sh
+        /vagrant/scripts/setup_hdf_trucking_app.sh
 
 7. Install Banana Dashboard
 
@@ -115,7 +117,7 @@ The Storm console is available at [http://localhost:8744/index.html](http://loca
 
 The source code for the average speed topology is at:
 
-    /home/vagrant/sync/src/hdf-trucking-storm/
+    /vagrant/src/hdf-trucking-storm/
 
 ### Solr/Banana
 
