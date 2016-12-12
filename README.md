@@ -128,3 +128,16 @@ There is a single collection created called 'truck_average_speed' to hold the av
 NiFi is responsible for consuming those events from Kafka and ingesting them to Solr.
 
 The Banana dashboard is available at [http://localhost:8886/solr/banana/src/index.html](http://localhost:8886/solr/banana/src/index.html).
+
+## HDF Versions
+
+This project currently installs and uses HDF 2.1.0.
+
+In order to use a different version, edit setup_hdf_blueprint.sh and modify the following properties:
+
+    # HDF 2.1.0
+    export ambari_version=2.4.2.0
+    export ambari_stack_name=HDF
+    export ambari_stack_version=2.1
+    export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.0.0-165.tar.gz"
+    export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0"

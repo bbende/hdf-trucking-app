@@ -35,11 +35,22 @@ export setup_kdc="${setup_kdc:-false}"
 export setup_postgres_for_ranger="${setup_postgres_for_ranger:-true}"
 export host_os=${host_os:-centos6}
 
+# HDF 2.0.0
+#export ambari_version=2.4.1.0
+#export ambari_stack_name=HDF
+#export ambari_stack_version=2.0
+#export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.0.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.0.0.0-579.tar.gz"
+#export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.0.0.0"
+#export hdf_stack_version=2.0
 
-export ambari_version=2.4.1.0
-export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.0.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.0.0.0-579.tar.gz"
+# HDF 2.1.0
+export ambari_version=2.4.2.0
+export ambari_stack_name=HDF
+export ambari_stack_version=2.1
+export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.0.0-165.tar.gz"
+export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0"
+
 export ambari_repo="http://public-repo-1.hortonworks.com/ambari/${host_os}/2.x/updates/${ambari_version}/ambari.repo"
-export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.0.0.0"
 export host_count=1
 
 yum install -y git python-argparse
@@ -54,13 +65,13 @@ chmod +x ~/ambari-bootstrap/ambari-bootstrap.sh
 ambari-server stop
 
 echo "Installing HDF mpack..."
-ambari-server install-mpack --mpack=${hdf_ambari_mpack_url} --purge --verbose
+echo yes | ambari-server install-mpack --mpack=${hdf_ambari_mpack_url} --purge --verbose
 
 #Optional - modify stack advisor to recommend installing Nifi on all nodes
 if [ "${install_nifi_on_all_nodes}" = true ]; then
-  cp /var/lib/ambari-server/resources/stacks/HDF/2.0/services/stack_advisor.py /var/lib/ambari-server/resources/stacks/HDF/2.0/services/stack_advisor.py.bak
-  sed -i.bak  "s#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR'\]#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR', 'NIFI_MASTER'\]#" /var/lib/ambari-server/resources/stacks/HDF/2.0/services/stack_advisor.py
-  sed -i.bak  "s#\('ZOOKEEPER_SERVER': {\"min\": 3},\)#\1\n      'NIFI_MASTER': {\"min\": $host_count},#g"  /var/lib/ambari-server/resources/stacks/HDF/2.0/services/stack_advisor.py
+  cp /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py.bak
+  sed -i.bak  "s#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR'\]#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR', 'NIFI_MASTER'\]#" /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py
+  sed -i.bak  "s#\('ZOOKEEPER_SERVER': {\"min\": 3},\)#\1\n      'NIFI_MASTER': {\"min\": $host_count},#g"  /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py
 fi
 
 #start Ambari
@@ -89,6 +100,9 @@ else
   tee configuration-custom.json > /dev/null << EOF
 {
   "configurations" : {
+    "nifi-ambari-config" : {
+        "nifi.security.encrypt.configuration.password" : "changemeplease"
+    },
     "nifi-properties": {
         "nifi.web.http.host": " ",
         "nifi.remote.input.socket.port" : "8731"
@@ -99,8 +113,6 @@ EOF
 fi
 
 echo "Deploying HDF..."
-export ambari_stack_name=HDF
-export ambari_stack_version=2.0
 ./deploy-recommended-cluster.bash
 
 #To reset and start over:
