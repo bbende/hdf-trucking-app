@@ -38,11 +38,9 @@ public class ParseSpeedEventBolt extends BaseRichBolt {
     public static final String FIELD_ROUTE_ID = "route_id";
     public static final String FIELD_SPEED_EVENT = "speed_event";
 
-    private final String streamId;
     private OutputCollector collector;
 
-    public ParseSpeedEventBolt(final String streamId) {
-        this.streamId = streamId;
+    public ParseSpeedEventBolt() {
     }
 
     @Override
@@ -74,14 +72,14 @@ public class ParseSpeedEventBolt extends BaseRichBolt {
             collector.reportError(new Exception("Unable to parse SpeedEvent for value: " + value));
             collector.fail(input);
         } else {
-            collector.emit(streamId, new Values(speedEvent.getDriverId(), speedEvent.getRouteId(), speedEvent));
+            collector.emit(new Values(speedEvent.getDriverId(), speedEvent.getRouteId(), speedEvent));
             collector.ack(input);
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(streamId, new Fields(FIELD_DRIVER_ID, FIELD_ROUTE_ID, FIELD_SPEED_EVENT));
+        declarer.declare(new Fields(FIELD_DRIVER_ID, FIELD_ROUTE_ID, FIELD_SPEED_EVENT));
     }
 
 }

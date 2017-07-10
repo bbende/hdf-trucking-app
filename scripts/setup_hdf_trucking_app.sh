@@ -69,12 +69,12 @@ cd $HDF_TRUCK_HOME/simulator/
 
 echo "Downloading MiNiFi..."
 cd ~
-wget http://www.trieuvan.com/apache/nifi/minifi/0.1.0/minifi-0.1.0-bin.tar.gz
-tar xzf minifi-0.1.0-bin.tar.gz -C $HDF_TRUCK_HOME/
+wget https://dist.apache.org/repos/dist/release/nifi/minifi/0.2.0/minifi-0.2.0-bin.tar.gz
+tar xzf minifi-0.2.0-bin.tar.gz -C $HDF_TRUCK_HOME/
 
 echo "Deploying MiNiFi config & starting..."
-/bin/cp -f $SRC_HOME/conf/minifi/config.yml $HDF_TRUCK_HOME/minifi-0.1.0/conf/
-$HDF_TRUCK_HOME/minifi-0.1.0/bin/minifi.sh start
+/bin/cp -f $SRC_HOME/conf/minifi/config.yml $HDF_TRUCK_HOME/minifi-0.2.0/conf/
+$HDF_TRUCK_HOME/minifi-0.2.0/bin/minifi.sh start
 
 echo "Done setting up HDF Trucking App!"
 echo "Go to Banana at http://localhost:8886/solr/banana/src/index.html and import the dashboard from hdf-trucking-app/conf/banana/HDF_Truck_Events-1478197521141"

@@ -40,13 +40,8 @@ import java.util.Map;
  */
 public class AverageSpeedBolt extends BaseWindowedBolt {
 
-    private final String streamId;
     private OutputCollector collector;
     private ObjectMapper mapper;
-
-    public AverageSpeedBolt(final String streamId) {
-        this.streamId = streamId;
-    }
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
@@ -84,7 +79,7 @@ public class AverageSpeedBolt extends BaseWindowedBolt {
             try {
                 // marshall to json and emit a new tuple with "key" and "message" fields
                 final String avgSpeedJson = mapper.writeValueAsString(avgSpeedWithTuples.averageSpeed);
-                collector.emit(streamId, new Values("key", avgSpeedJson));
+                collector.emit(new Values("key", avgSpeedJson));
 
                 // ack the tuples that create the avg speed
                 for (Tuple tuple : avgSpeedWithTuples.getTuples()) {
@@ -104,7 +99,7 @@ public class AverageSpeedBolt extends BaseWindowedBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream(streamId, new Fields("key", "message"));
+        declarer.declare(new Fields("key", "message"));
     }
 
     private static class AverageSpeedWithTuples {

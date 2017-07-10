@@ -18,7 +18,7 @@ package com.hortonworks.trucking.storm;
 
 import com.hortonworks.trucking.storm.bolt.AverageSpeedBolt;
 import com.hortonworks.trucking.storm.bolt.ParseSpeedEventBolt;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.StormSubmitter;
@@ -28,33 +28,22 @@ import org.apache.storm.kafka.bolt.mapper.FieldNameBasedTupleToKafkaMapper;
 import org.apache.storm.kafka.bolt.selector.DefaultTopicSelector;
 import org.apache.storm.kafka.spout.KafkaSpout;
 import org.apache.storm.kafka.spout.KafkaSpoutConfig;
-import org.apache.storm.kafka.spout.KafkaSpoutRetryExponentialBackoff;
-import org.apache.storm.kafka.spout.KafkaSpoutRetryService;
-import org.apache.storm.kafka.spout.KafkaSpoutStreams;
-import org.apache.storm.kafka.spout.KafkaSpoutTupleBuilder;
-import org.apache.storm.kafka.spout.KafkaSpoutTuplesBuilder;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.topology.base.BaseWindowedBolt;
-import org.apache.storm.tuple.Fields;
-import org.apache.storm.tuple.Values;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.storm.kafka.spout.KafkaSpoutConfig.FirstPollOffsetStrategy.*;
+import static org.apache.storm.kafka.spout.KafkaSpoutConfig.FirstPollOffsetStrategy.LATEST;
 
 public class SpeedTopology implements Serializable {
 
     static final long serialVersionUID = 42L;
 
-    private static final String STREAM = "truck_speed_stream";
     private static final String TOPIC = "truck_speed_events";
     private static final String RESULT_TOPIC = "truck_average_speed";
 
@@ -108,89 +97,33 @@ public class SpeedTopology implements Serializable {
         final TopologyBuilder tp = new TopologyBuilder();
 
         // consume from the truck_speed_events topic
-        tp.setSpout("kafka_spout", new KafkaSpout<>(getKafkaSpoutConfig(getKafkaSpoutStreams())), 1);
+        tp.setSpout("kafka_spout", new KafkaSpout<>(getKafkaSpoutConfig()), 1);
 
         // parse pipe-delimited speed events into a POJO
-        tp.setBolt("parse_speed_event", new ParseSpeedEventBolt(STREAM))
-                .shuffleGrouping("kafka_spout", STREAM);
+        tp.setBolt("parse_speed_event", new ParseSpeedEventBolt())
+                .shuffleGrouping("kafka_spout");
 
         // calculate the average speed for driver-route over a 10 second window
-        tp.setBolt("average_speed", new AverageSpeedBolt(STREAM).withTumblingWindow(new BaseWindowedBolt.Duration(WINDOW_SIZE_MS, TimeUnit.MILLISECONDS)))
-                .shuffleGrouping("parse_speed_event", STREAM);
+        tp.setBolt("average_speed", new AverageSpeedBolt().withTumblingWindow(new BaseWindowedBolt.Duration(WINDOW_SIZE_MS, TimeUnit.MILLISECONDS)))
+                .shuffleGrouping("parse_speed_event");
                         //new Fields(ParseSpeedEventBolt.FIELD_DRIVER_ID, ParseSpeedEventBolt.FIELD_ROUTE_ID));
 
         // send results back to Kafka results topic
         tp.setBolt("kakfa_bolt", getKafkaBolt())
-                .shuffleGrouping("average_speed", STREAM);
+                .shuffleGrouping("average_speed");
 
         return tp.createTopology();
     }
 
-    /**
-     * @param kafkaSpoutStreams the streams coming from Kafka
-     * @return the overall config for the KafkaSpout
-     */
-    protected KafkaSpoutConfig<String,String> getKafkaSpoutConfig(KafkaSpoutStreams kafkaSpoutStreams) {
-        return new KafkaSpoutConfig.Builder<>(getKafkaConsumerProps(), kafkaSpoutStreams, getTuplesBuilder(), getRetryService())
+    protected KafkaSpoutConfig<String,String> getKafkaSpoutConfig() {
+        return KafkaSpoutConfig.builder("localhost:6667", TOPIC)
+                .setGroupId("speedTopologyGroup")
+                .setKey(StringDeserializer.class)
+                .setValue(StringDeserializer.class)
                 .setOffsetCommitPeriodMs(10_000)
                 .setFirstPollOffsetStrategy(LATEST)
-                .setMaxUncommittedOffsets(250)
+                .setMaxUncommittedOffsets(259)
                 .build();
-    }
-
-    /**
-     * @return the Kafka retry service
-     */
-    protected KafkaSpoutRetryService getRetryService() {
-        return new KafkaSpoutRetryExponentialBackoff(
-                KafkaSpoutRetryExponentialBackoff.TimeInterval.microSeconds(500),
-                KafkaSpoutRetryExponentialBackoff.TimeInterval.milliSeconds(2), Integer.MAX_VALUE,
-                KafkaSpoutRetryExponentialBackoff.TimeInterval.seconds(10));
-    }
-
-    /**
-     * @return the properties for the Kafka Consumer.
-     */
-    protected Map<String,Object> getKafkaConsumerProps() {
-        Map<String, Object> props = new HashMap<>();
-        // props.put(KafkaSpoutConfig.Consumer.ENABLE_AUTO_COMMIT, "true");
-        props.put(KafkaSpoutConfig.Consumer.BOOTSTRAP_SERVERS, "localhost:6667");
-        props.put(KafkaSpoutConfig.Consumer.GROUP_ID, "speedTopologyGroup");
-        props.put(KafkaSpoutConfig.Consumer.KEY_DESERIALIZER, "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(KafkaSpoutConfig.Consumer.VALUE_DESERIALIZER, "org.apache.kafka.common.serialization.StringDeserializer");
-        return props;
-    }
-
-    /**
-     * Creates the Tuple builders. This topology has a single Tuple builder that takes ConsumerRecord<String,String> and
-     * produces Tuples with topic, partition, offset, key, and value.
-     *
-     * @return the Tuple builders for this topology
-     */
-    protected KafkaSpoutTuplesBuilder<String, String> getTuplesBuilder() {
-        final KafkaSpoutTupleBuilder<String,String> tupleBuilder = new KafkaSpoutTupleBuilder<String, String>(TOPIC) {
-            @Override
-            public List<Object> buildTuple(ConsumerRecord<String, String> consumerRecord) {
-                return new Values(consumerRecord.topic(),
-                        consumerRecord.partition(),
-                        consumerRecord.offset(),
-                        consumerRecord.key(),
-                        consumerRecord.value());
-            }
-        };
-
-        return new KafkaSpoutTuplesBuilder.Builder<>(tupleBuilder).build();
-    }
-
-    /**
-     * Declare the streams coming from Kafka. This example has a single stream where each tuple contains
-     * the topic, partition, offset, key, and value.
-     *
-     * @return the KafkaSpoutStreams instance for this topology
-     */
-    protected KafkaSpoutStreams getKafkaSpoutStreams() {
-        final Fields outputFields = new Fields("topic", "partition", "offset", "key", "value");
-        return new KafkaSpoutStreams.Builder(outputFields, STREAM, new String[] {TOPIC}).build();
     }
 
     protected KafkaBolt<String,String> getKafkaBolt() {

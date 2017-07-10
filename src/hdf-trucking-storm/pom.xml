@@ -13,7 +13,7 @@
     <artifactId>hdf-trucking-storm</artifactId>
 
     <properties>
-        <storm.version>1.0.1</storm.version>
+        <storm.version>1.1.0</storm.version>
     </properties>
 
     <build>
@@ -60,11 +60,11 @@
             <artifactId>storm-kafka</artifactId>
             <version>${storm.version}</version>
         </dependency>
-        <!-- Make sure we use Kafka 0.9.x client -->
+        <!-- Make sure we use Kafka 0.10.x client -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>0.9.0.1</version>
+            <version>0.10.0.0</version>
         </dependency>
         <!-- Jackson for marshallling to JSON-->
         <dependency>

@@ -44,11 +44,18 @@ export host_os=${host_os:-centos6}
 #export hdf_stack_version=2.0
 
 # HDF 2.1.0
-export ambari_version=2.4.2.0
+#export ambari_version=2.4.2.0
+#export ambari_stack_name=HDF
+#export ambari_stack_version=2.1
+#export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.0.0-165.tar.gz"
+#export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0"
+
+# HDF 3.0.0
+export ambari_version=2.5.1.0
 export ambari_stack_name=HDF
-export ambari_stack_version=2.1
-export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-2.1.0.0-165.tar.gz"
-export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/2.x/updates/2.1.0.0"
+export ambari_stack_version=3.0
+export hdf_ambari_mpack_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/3.x/updates/3.0.0.0/tars/hdf_ambari_mp/hdf-ambari-mpack-3.0.0.0-453.tar.gz"
+export hdf_repo_url="http://public-repo-1.hortonworks.com/HDF/${host_os}/3.x/updates/3.0.0.0"
 
 export ambari_repo="http://public-repo-1.hortonworks.com/ambari/${host_os}/2.x/updates/${ambari_version}/ambari.repo"
 export host_count=1
@@ -73,6 +80,9 @@ if [ "${install_nifi_on_all_nodes}" = true ]; then
   sed -i.bak  "s#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR'\]#return \['ZOOKEEPER_SERVER', 'METRICS_COLLECTOR', 'NIFI_MASTER'\]#" /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py
   sed -i.bak  "s#\('ZOOKEEPER_SERVER': {\"min\": 3},\)#\1\n      'NIFI_MASTER': {\"min\": $host_count},#g"  /var/lib/ambari-server/resources/stacks/HDF/${ambari_stack_version}/services/stack_advisor.py
 fi
+
+echo "Installing ambari-metrics-hadoop-sink"
+yum install -y ambari-metrics-hadoop-sink
 
 #start Ambari
 ambari-server start
